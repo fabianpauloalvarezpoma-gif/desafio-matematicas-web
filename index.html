@@ -1,0 +1,1792 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Matemáticas en el Mundo Real — Fibonacci & Primos</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+  <style>
+    /* =============================================
+       VARIABLES Y RESET
+    ============================================= */
+    :root {
+      --bg:        #0a0a0f;
+      --surface:   #12121a;
+      --card:      #1a1a28;
+      --border:    #2a2a40;
+      --accent1:   #7c3aed;   /* violeta */
+      --accent2:   #06b6d4;   /* cyan */
+      --accent3:   #f59e0b;   /* ámbar */
+      --accent4:   #10b981;   /* verde */
+      --text:      #e8e8f0;
+      --muted:     #6b6b8a;
+      --font-head: 'Syne', sans-serif;
+      --font-code: 'Space Mono', monospace;
+      --radius:    14px;
+      --glow1: 0 0 40px rgba(124,58,237,0.35);
+      --glow2: 0 0 40px rgba(6,182,212,0.35);
+      --glow3: 0 0 40px rgba(245,158,11,0.35);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-head);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* =============================================
+       FONDO ANIMADO
+    ============================================= */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 60% 40% at 20% 20%, rgba(124,58,237,0.12) 0%, transparent 60%),
+        radial-gradient(ellipse 50% 60% at 80% 80%, rgba(6,182,212,0.10) 0%, transparent 60%),
+        radial-gradient(ellipse 40% 50% at 50% 50%, rgba(245,158,11,0.05) 0%, transparent 60%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* =============================================
+       HEADER HERO
+    ============================================= */
+    .hero {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      padding: 100px 24px 70px;
+      overflow: hidden;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(124,58,237,0.15);
+      border: 1px solid rgba(124,58,237,0.4);
+      color: #a78bfa;
+      padding: 6px 18px;
+      border-radius: 100px;
+      font-family: var(--font-code);
+      font-size: 0.75rem;
+      letter-spacing: 0.1em;
+      margin-bottom: 28px;
+      animation: fadeUp 0.6s ease both;
+    }
+
+    .hero h1 {
+      font-size: clamp(2.4rem, 6vw, 5rem);
+      font-weight: 800;
+      line-height: 1.05;
+      animation: fadeUp 0.7s 0.1s ease both;
+    }
+
+    .hero h1 span.grad1 {
+      background: linear-gradient(135deg, #a78bfa, #7c3aed);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .hero h1 span.grad2 {
+      background: linear-gradient(135deg, #06b6d4, #0ea5e9);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+
+    .hero p {
+      max-width: 680px;
+      margin: 24px auto 0;
+      font-size: 1.05rem;
+      color: var(--muted);
+      line-height: 1.7;
+      font-weight: 400;
+      animation: fadeUp 0.8s 0.2s ease both;
+    }
+
+    /* navegación de ejercicios */
+    .nav-pills {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 44px;
+      animation: fadeUp 0.9s 0.3s ease both;
+    }
+    .nav-pill {
+      display: flex; align-items: center; gap: 8px;
+      padding: 10px 22px;
+      border-radius: 100px;
+      border: 1.5px solid var(--border);
+      background: var(--surface);
+      color: var(--text);
+      font-family: var(--font-head);
+      font-size: 0.88rem;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.25s;
+    }
+    .nav-pill:hover  { border-color: var(--accent1); color: #a78bfa; box-shadow: var(--glow1); transform: translateY(-2px); }
+    .nav-pill.c2:hover { border-color: var(--accent2); color: #22d3ee; box-shadow: var(--glow2); }
+    .nav-pill.c3:hover { border-color: var(--accent3); color: #fcd34d; box-shadow: var(--glow3); }
+
+    .dot { width: 8px; height: 8px; border-radius: 50%; }
+    .dot1 { background: var(--accent1); }
+    .dot2 { background: var(--accent2); }
+    .dot3 { background: var(--accent3); }
+
+    /* =============================================
+       CONTENEDOR PRINCIPAL
+    ============================================= */
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 24px 120px;
+      position: relative; z-index: 1;
+    }
+
+    /* =============================================
+       TARJETA DE EJERCICIO
+    ============================================= */
+    .exercise-card {
+      background: var(--card);
+      border: 1.5px solid var(--border);
+      border-radius: 24px;
+      margin-bottom: 64px;
+      overflow: hidden;
+      transition: box-shadow 0.3s;
+    }
+    .exercise-card:hover { box-shadow: 0 8px 60px rgba(0,0,0,0.5); }
+
+    /* Header de tarjeta */
+    .card-header {
+      padding: 36px 40px 32px;
+      border-bottom: 1.5px solid var(--border);
+      display: flex;
+      align-items: flex-start;
+      gap: 20px;
+    }
+    .card-icon {
+      width: 56px; height: 56px;
+      border-radius: 16px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.6rem;
+      flex-shrink: 0;
+    }
+    .icon1 { background: rgba(124,58,237,0.18); border: 1.5px solid rgba(124,58,237,0.4); }
+    .icon2 { background: rgba(6,182,212,0.15); border: 1.5px solid rgba(6,182,212,0.35); }
+    .icon3 { background: rgba(245,158,11,0.15); border: 1.5px solid rgba(245,158,11,0.35); }
+
+    .card-header-text { flex: 1; }
+    .ex-num {
+      font-family: var(--font-code);
+      font-size: 0.72rem;
+      letter-spacing: 0.12em;
+      margin-bottom: 6px;
+    }
+    .c1-text { color: #a78bfa; }
+    .c2-text { color: #22d3ee; }
+    .c3-text { color: #fcd34d; }
+
+    .card-header h2 {
+      font-size: 1.7rem;
+      font-weight: 800;
+      line-height: 1.2;
+    }
+    .card-header p {
+      color: var(--muted);
+      margin-top: 8px;
+      font-size: 0.93rem;
+      line-height: 1.6;
+      font-weight: 400;
+    }
+
+    /* Cuerpo de tarjeta — 2 columnas en desktop */
+    .card-body {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0;
+    }
+    @media (max-width: 768px) {
+      .card-body { grid-template-columns: 1fr; }
+      .card-header { padding: 24px 20px 20px; flex-direction: column; }
+      .card-panel { padding: 24px 20px; }
+    }
+
+    .card-panel {
+      padding: 32px 36px;
+    }
+    .card-panel + .card-panel {
+      border-left: 1.5px solid var(--border);
+    }
+    @media (max-width: 768px) {
+      .card-panel + .card-panel { border-left: none; border-top: 1.5px solid var(--border); }
+    }
+
+    /* =============================================
+       SECCIONES INTERNAS
+    ============================================= */
+    .section-label {
+      font-family: var(--font-code);
+      font-size: 0.68rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 14px;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .section-label::after {
+      content: ''; flex: 1; height: 1px; background: var(--border);
+    }
+
+    /* =============================================
+       DIAGRAMA DE ALGORITMO (SVG-LIKE via CSS)
+    ============================================= */
+    .algo-diagram {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      margin-bottom: 20px;
+      font-family: var(--font-code);
+      font-size: 0.78rem;
+    }
+
+    .flowchart {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0;
+    }
+
+    .fc-node {
+      text-align: center;
+      padding: 10px 18px;
+      border-radius: 8px;
+      font-size: 0.72rem;
+      line-height: 1.4;
+      max-width: 240px;
+      width: 100%;
+    }
+    .fc-start, .fc-end {
+      background: rgba(124,58,237,0.2);
+      border: 1.5px solid rgba(124,58,237,0.5);
+      color: #c4b5fd;
+      border-radius: 100px;
+    }
+    .fc-process {
+      background: rgba(30,30,50,0.8);
+      border: 1.5px solid var(--border);
+      color: var(--text);
+    }
+    .fc-decision {
+      background: rgba(245,158,11,0.12);
+      border: 1.5px solid rgba(245,158,11,0.4);
+      color: #fcd34d;
+      transform: skewX(-2deg);
+    }
+    .fc-output {
+      background: rgba(16,185,129,0.12);
+      border: 1.5px solid rgba(16,185,129,0.4);
+      color: #6ee7b7;
+    }
+
+    /* color por ejercicio */
+    .ex2 .fc-start, .ex2 .fc-end { background: rgba(6,182,212,0.15); border-color: rgba(6,182,212,0.4); color: #67e8f9; }
+    .ex3 .fc-start, .ex3 .fc-end { background: rgba(245,158,11,0.15); border-color: rgba(245,158,11,0.4); color: #fcd34d; }
+
+    .fc-arrow {
+      width: 2px; height: 22px;
+      background: var(--border);
+      position: relative;
+      margin: 0 auto;
+    }
+    .fc-arrow::after {
+      content: '▼';
+      position: absolute;
+      bottom: -10px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 0.55rem;
+      color: var(--muted);
+    }
+    .fc-branch {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      font-size: 0.65rem;
+      color: var(--muted);
+    }
+    .fc-branch-yes, .fc-branch-no {
+      display: flex; flex-direction: column; align-items: center; gap: 4px;
+    }
+    .fc-branch-label {
+      font-size: 0.6rem;
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+    .yes-label { background: rgba(16,185,129,0.2); color: #6ee7b7; }
+    .no-label  { background: rgba(239,68,68,0.2);  color: #fca5a5; }
+
+    /* explicación paso a paso */
+    .step-list { list-style: none; display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
+    .step-item {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+    }
+    .step-num {
+      width: 24px; height: 24px;
+      border-radius: 6px;
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--font-code);
+      font-size: 0.7rem;
+      font-weight: 700;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+    .sn1 { background: rgba(124,58,237,0.25); color: #a78bfa; }
+    .sn2 { background: rgba(6,182,212,0.20);  color: #22d3ee; }
+    .sn3 { background: rgba(245,158,11,0.20); color: #fcd34d; }
+
+    .step-text { font-size: 0.85rem; color: var(--text); line-height: 1.55; font-weight: 400; font-family: var(--font-head); }
+    .step-text strong { font-weight: 700; }
+    .step-text code {
+      font-family: var(--font-code);
+      background: rgba(255,255,255,0.06);
+      padding: 1px 5px; border-radius: 4px; font-size: 0.78rem;
+    }
+
+    /* bloque de código fuente */
+    .code-block {
+      background: #0d0d16;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px;
+      font-family: var(--font-code);
+      font-size: 0.73rem;
+      line-height: 1.65;
+      overflow-x: auto;
+      margin-bottom: 20px;
+      position: relative;
+    }
+    .code-block .kw  { color: #c084fc; }  /* keyword */
+    .code-block .fn  { color: #67e8f9; }  /* function */
+    .code-block .str { color: #86efac; }  /* string */
+    .code-block .num { color: #fbbf24; }  /* number */
+    .code-block .cm  { color: #4b5563; font-style: italic; }  /* comment */
+    .code-block .var { color: #e2e8f0; }
+    .code-tag {
+      position: absolute;
+      top: 10px; right: 12px;
+      font-size: 0.62rem;
+      color: var(--muted);
+      letter-spacing: 0.06em;
+    }
+
+    /* =============================================
+       FORMULARIO / INPUTS
+    ============================================= */
+    .form-group { margin-bottom: 18px; }
+    .form-group label {
+      display: block;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--muted);
+      margin-bottom: 7px;
+      letter-spacing: 0.03em;
+      font-family: var(--font-code);
+    }
+    .form-group input {
+      width: 100%;
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      color: var(--text);
+      padding: 11px 14px;
+      border-radius: 10px;
+      font-family: var(--font-code);
+      font-size: 0.9rem;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .form-group input:focus { border-color: var(--accent1); box-shadow: 0 0 0 3px rgba(124,58,237,0.15); }
+    .ex2-form input:focus   { border-color: var(--accent2); box-shadow: 0 0 0 3px rgba(6,182,212,0.15); }
+    .ex3-form input:focus   { border-color: var(--accent3); box-shadow: 0 0 0 3px rgba(245,158,11,0.15); }
+
+    /* botón */
+    .btn {
+      width: 100%;
+      padding: 13px;
+      border: none;
+      border-radius: 10px;
+      font-family: var(--font-head);
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+      position: relative;
+      overflow: hidden;
+    }
+    .btn::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: rgba(255,255,255,0.08);
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+    .btn:hover::after { opacity: 1; }
+    .btn:active { transform: scale(0.98); }
+
+    .btn1 { background: linear-gradient(135deg, #7c3aed, #6d28d9); color: #fff; box-shadow: 0 4px 20px rgba(124,58,237,0.4); }
+    .btn2 { background: linear-gradient(135deg, #06b6d4, #0284c7); color: #fff; box-shadow: 0 4px 20px rgba(6,182,212,0.4); }
+    .btn3 { background: linear-gradient(135deg, #f59e0b, #d97706); color: #fff; box-shadow: 0 4px 20px rgba(245,158,11,0.4); }
+
+    /* =============================================
+       ÁREA DE RESULTADO
+    ============================================= */
+    .result-box {
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      margin-top: 18px;
+      min-height: 100px;
+      font-family: var(--font-code);
+      font-size: 0.82rem;
+      line-height: 1.7;
+      transition: border-color 0.3s;
+    }
+    .result-box.active1 { border-color: rgba(124,58,237,0.5); }
+    .result-box.active2 { border-color: rgba(6,182,212,0.4); }
+    .result-box.active3 { border-color: rgba(245,158,11,0.4); }
+
+    .result-placeholder {
+      color: var(--muted);
+      font-style: italic;
+      font-size: 0.78rem;
+    }
+
+    /* tabla de resultados */
+    .res-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.78rem;
+    }
+    .res-table th {
+      text-align: left;
+      color: var(--muted);
+      padding: 6px 10px;
+      border-bottom: 1px solid var(--border);
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      font-size: 0.7rem;
+    }
+    .res-table td {
+      padding: 8px 10px;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+    }
+    .res-table tr:last-child td { border-bottom: none; }
+    .res-table tr:hover td { background: rgba(255,255,255,0.03); }
+
+    .tag-prime {
+      display: inline-block;
+      background: rgba(16,185,129,0.15);
+      color: #6ee7b7;
+      border: 1px solid rgba(16,185,129,0.3);
+      padding: 1px 7px;
+      border-radius: 4px;
+      font-size: 0.65rem;
+      margin-left: 6px;
+    }
+    .tag-noprime {
+      display: inline-block;
+      background: rgba(100,100,120,0.15);
+      color: var(--muted);
+      border: 1px solid rgba(100,100,120,0.25);
+      padding: 1px 7px;
+      border-radius: 4px;
+      font-size: 0.65rem;
+      margin-left: 6px;
+    }
+
+    /* resultado primo grande */
+    .prime-result {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 14px;
+      padding: 10px 0;
+    }
+    .prime-circle {
+      width: 80px; height: 80px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.8rem;
+      font-weight: 800;
+    }
+    .prime-yes { background: rgba(16,185,129,0.15); border: 2px solid rgba(16,185,129,0.5); color: #6ee7b7; }
+    .prime-no  { background: rgba(239,68,68,0.12);  border: 2px solid rgba(239,68,68,0.4);  color: #fca5a5; }
+    .prime-label { font-size: 0.95rem; font-weight: 700; }
+    .prime-detail { font-size: 0.77rem; color: var(--muted); text-align: center; line-height: 1.6; }
+
+    /* total ahorro */
+    .total-box {
+      margin-top: 14px;
+      padding: 12px 16px;
+      border-radius: 10px;
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .total1 { background: rgba(124,58,237,0.12); border: 1px solid rgba(124,58,237,0.3); }
+    .total3 { background: rgba(245,158,11,0.12);  border: 1px solid rgba(245,158,11,0.3); }
+    .total-label { font-size: 0.78rem; color: var(--muted); }
+    .total-val { font-size: 1.2rem; font-weight: 800; }
+    .tv1 { color: #a78bfa; }
+    .tv3 { color: #fcd34d; }
+
+    /* chips de fibonacci */
+    .fib-chips {
+      display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px;
+    }
+    .fib-chip {
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 0.73rem;
+      font-family: var(--font-code);
+      background: rgba(6,182,212,0.1);
+      border: 1px solid rgba(6,182,212,0.25);
+      color: #67e8f9;
+    }
+    .fib-chip.is-prime {
+      background: rgba(16,185,129,0.15);
+      border-color: rgba(16,185,129,0.4);
+      color: #6ee7b7;
+      position: relative;
+    }
+    .fib-chip.is-prime::after {
+      content: '★';
+      position: absolute;
+      top: -6px; right: -4px;
+      font-size: 0.55rem;
+      color: #fcd34d;
+    }
+
+    /* conclusión */
+    .conclusion-strip {
+      background: rgba(255,255,255,0.03);
+      border-top: 1.5px solid var(--border);
+      padding: 20px 36px;
+      display: flex;
+      gap: 16px;
+      align-items: flex-start;
+    }
+    @media (max-width: 768px) { .conclusion-strip { padding: 18px 20px; } }
+    .conc-icon { font-size: 1.2rem; flex-shrink: 0; margin-top: 2px; }
+    .conc-text { font-size: 0.84rem; color: var(--muted); line-height: 1.65; font-weight: 400; font-family: var(--font-head); }
+    .conc-text strong { color: var(--text); font-weight: 600; }
+
+    /* =============================================
+       ERROR
+    ============================================= */
+    .error-msg {
+      color: #fca5a5;
+      font-size: 0.78rem;
+      margin-top: 10px;
+      display: none;
+      font-family: var(--font-code);
+    }
+    .error-msg.show { display: block; }
+
+    /* =============================================
+       FOOTER
+    ============================================= */
+    footer {
+      text-align: center;
+      padding: 40px 24px;
+      border-top: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 0.78rem;
+      font-family: var(--font-code);
+      position: relative; z-index: 1;
+    }
+
+    /* =============================================
+       ANIMACIONES
+    ============================================= */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .animate-in {
+      opacity: 0;
+      animation: fadeUp 0.6s ease forwards;
+    }
+
+    /* scroll reveal */
+    .reveal {
+      opacity: 0;
+      transform: translateY(30px);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+    .reveal.visible {
+      opacity: 1;
+      transform: none;
+    }
+
+    /* spin loading */
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading::after {
+      content: '';
+      display: inline-block;
+      width: 12px; height: 12px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+      margin-left: 8px;
+      vertical-align: middle;
+    }
+
+    /* separador visual entre paneles móvil */
+    .panel-divider {
+      display: none;
+      height: 1px;
+      background: var(--border);
+      margin: 0 20px;
+    }
+    @media (max-width: 768px) { .panel-divider { display: block; } }
+
+  </style>
+</head>
+<body>
+
+<!-- =========================================
+     HERO
+========================================== -->
+<header class="hero">
+  <div class="hero-badge">
+    <span>🧮</span> Desafío Web 2025 — Matemáticas Aplicadas
+  </div>
+  <h1>
+    <span class="grad1">Fibonacci</span> &amp;<br/>
+    <span class="grad2">Números Primos</span><br/>en el Mundo Real
+  </h1>
+  <p>
+    Tres ejercicios interactivos que demuestran cómo los patrones matemáticos resuelven
+    problemas reales: ahorro personal, seguridad digital y análisis de patrones naturales.
+    Ingresa datos y observa los algoritmos en acción.
+  </p>
+  <nav class="nav-pills">
+    <a href="#ej1" class="nav-pill"><span class="dot dot1"></span>Ej. 1 — Ahorro Progresivo</a>
+    <a href="#ej2" class="nav-pill c2"><span class="dot dot2"></span>Ej. 2 — Seguridad &amp; Primos</a>
+    <a href="#ej3" class="nav-pill c3"><span class="dot dot3"></span>Ej. 3 — Fibonacci + Primos</a>
+  </nav>
+</header>
+
+<!-- =========================================
+     MAIN
+========================================== -->
+<main class="container">
+
+  <!-- =========================================
+       EJERCICIO 1 — AHORRO FIBONACCI
+  ========================================== -->
+  <article class="exercise-card reveal" id="ej1">
+    <div class="card-header">
+      <div class="card-icon icon1">💰</div>
+      <div class="card-header-text">
+        <div class="ex-num c1-text">// EJERCICIO 01 — SERIE DE FIBONACCI</div>
+        <h2>Plan de Ahorro Progresivo con Fibonacci</h2>
+        <p>
+          Una persona desea ahorrar dinero de forma creciente cada mes, siguiendo la serie de Fibonacci.
+          En lugar de depositar montos fijos, cada mes se suma lo ahorrado en los dos meses anteriores,
+          generando un crecimiento orgánico y sostenible, ideal para hábitos financieros graduales.
+        </p>
+      </div>
+    </div>
+
+    <div class="card-body">
+      <!-- PANEL IZQUIERDO: explicación + diagrama -->
+      <div class="card-panel">
+        <div class="section-label">Diagrama del algoritmo</div>
+
+        <div class="algo-diagram">
+          <div class="flowchart" id="flow1">
+            <div class="fc-node fc-start">🚀 INICIO<br/><small>Leer: número de meses N</small></div>
+            <div class="fc-arrow"></div>
+            <div class="fc-node fc-process">Inicializar:<br/><code>a=1, b=1, suma=0, mes=1</code></div>
+            <div class="fc-arrow"></div>
+            <div class="fc-node fc-decision">¿mes &lt;= N?</div>
+            <div class="fc-arrow"></div>
+            <div class="fc-branch">
+              <div class="fc-branch-yes">
+                <span class="fc-branch-label yes-label">SÍ ✓</span>
+                <div class="fc-node fc-process" style="font-size:0.65rem">
+                  Mostrar fila: mes, ahorro=a<br/>
+                  suma += a<br/>
+                  c = a + b<br/>
+                  a = b &nbsp;|&nbsp; b = c<br/>
+                  mes++
+                </div>
+              </div>
+              <div class="fc-branch-no">
+                <span class="fc-branch-label no-label">NO ✗</span>
+                <div class="fc-node fc-output" style="font-size:0.65rem">
+                  Mostrar tabla<br/>+ Total ahorrado
+                </div>
+              </div>
+            </div>
+            <div class="fc-arrow"></div>
+            <div class="fc-node fc-end">🏁 FIN</div>
+          </div>
+        </div>
+
+        <div class="section-label">Explicación paso a paso</div>
+        <ul class="step-list">
+          <li class="step-item">
+            <div class="step-num sn1">01</div>
+            <div class="step-text">
+              <strong>Inicialización:</strong> se definen <code>a = 1</code> y <code>b = 1</code>, que representan
+              el ahorro del mes 1 y mes 2 respectivamente (los dos primeros términos de Fibonacci).
+            </div>
+          </li>
+          <li class="step-item">
+            <div class="step-num sn1">02</div>
+            <div class="step-text">
+              <strong>Bucle iterativo:</strong> un <code>for</code> recorre desde el mes 1 hasta N.
+              En cada iteración se registra el ahorro del mes actual (<code>a</code>).
+            </div>
+          </li>
+          <li class="step-item">
+            <div class="step-num sn1">03</div>
+            <div class="step-text">
+              <strong>Avance de la serie:</strong> se calcula <code>c = a + b</code> (siguiente término),
+              luego <code>a = b</code> y <code>b = c</code>, moviendo la ventana de dos valores hacia adelante.
+            </div>
+          </li>
+          <li class="step-item">
+            <div class="step-num sn1">04</div>
+            <div class="step-text">
+              <strong>Acumulador:</strong> la variable <code>suma</code> va sumando todos los ahorros
+              para mostrar el total al final. <code>document.getElementById()</code> actualiza la tabla en pantalla.
+            </div>
+          </li>
+          <li class="step-item">
+            <div class="step-num sn1">05</div>
+            <div class="step-text">
+              <strong>Sin arrays:</strong> el algoritmo usa solo variables simples (<code>a, b, c</code>),
+              lo que lo hace eficiente en memoria. La complejidad es O(N) en tiempo y O(1) en espacio.
+            </div>
+          </li>
+        </ul>
+
+        <div class="section-label">Código JavaScript</div>
+        <div class="code-block">
+          <span class="code-tag">script.js</span>
+<span class="cm">// ── Ejercicio 1: Ahorro con Fibonacci ──────</span>
+<span class="kw">function</span> <span class="fn">calcularAhorro</span>() {
+  <span class="cm">// Leer el valor del formulario mediante getElementById</span>
+  <span class="kw">const</span> <span class="var">meses</span> = parseInt(
+    document.<span class="fn">getElementById</span>(<span class="str">"meses"</span>).value
+  );
+
+  <span class="cm">// Validación de entrada</span>
+  <span class="kw">if</span> (isNaN(meses) || meses &lt; <span class="num">1</span> || meses &gt; <span class="num">40</span>) {
+    <span class="fn">mostrarError</span>(<span class="str">"ej1Error"</span>, <span class="str">"Ingresa un número entre 1 y 40"</span>);
+    <span class="kw">return</span>;
+  }
+
+  <span class="cm">// Variables de la serie Fibonacci (sin arrays)</span>
+  <span class="kw">let</span> a = <span class="num">1</span>, b = <span class="num">1</span>, c;  <span class="cm">// a=mes actual, b=siguiente</span>
+  <span class="kw">let</span> suma = <span class="num">0</span>;           <span class="cm">// acumulador del total</span>
+  <span class="kw">let</span> html = <span class="str">""</span>;
+
+  <span class="cm">// Construir filas de la tabla</span>
+  <span class="kw">for</span> (<span class="kw">let</span> i = <span class="num">1</span>; i &lt;= meses; i++) {
+    suma += a;  <span class="cm">// sumar ahorro de este mes</span>
+    html += <span class="str">`&lt;tr&gt;
+      &lt;td&gt;Mes ${i}&lt;/td&gt;
+      &lt;td&gt;Bs. ${a}&lt;/td&gt;
+      &lt;td&gt;Bs. ${suma}&lt;/td&gt;
+    &lt;/tr&gt;`</span>;
+
+    <span class="cm">// Avanzar la serie: c = a + b, luego a←b, b←c</span>
+    c = a + b;
+    a = b;
+    b = c;
+  }
+
+  <span class="cm">// Inyectar HTML usando getElementById</span>
+  document.<span class="fn">getElementById</span>(<span class="str">"tablaAhorro"</span>).innerHTML = html;
+  document.<span class="fn">getElementById</span>(<span class="str">"totalAhorro"</span>).textContent =
+    <span class="str">"Bs. "</span> + suma;
+  document.<span class="fn">getElementById</span>(<span class="str">"resultAhorro"</span>).classList.add(<span class="str">"active1"</span>);
+}
+        </div>
+      </div>
+
+      <!-- PANEL DERECHO: formulario + resultado -->
+      <div class="card-panel">
+        <div class="section-label">Probar el ejercicio</div>
+
+        <div class="form-group">
+          <label for="meses">¿Cuántos meses deseas ahorrar? (1 – 40)</label>
+          <input
+            type="number" id="meses"
+            min="1" max="40" value="6"
+            placeholder="Ej: 6"
+          />
+        </div>
+
+        <div id="ej1Error" class="error-msg">⚠ Ingresa un número entre 1 y 40.</div>
+
+        <button class="btn btn1" onclick="calcularAhorro()">
+          💰 Calcular plan de ahorro
+        </button>
+
+        <div id="resultAhorro" class="result-box">
+          <span class="result-placeholder">← Ingresa la cantidad de meses y presiona el botón para ver tu plan de ahorro Fibonacci.</span>
+        </div>
+
+        <div class="section-label" style="margin-top:20px">¿Por qué Fibonacci para ahorrar?</div>
+        <ul class="step-list">
+          <li class="step-item">
+            <div class="step-num sn1">💡</div>
+            <div class="step-text">
+              El crecimiento es <strong>gradual y natural</strong>: los primeros meses el esfuerzo es mínimo
+              (Bs. 1, 1, 2…) y aumenta conforme el hábito se consolida.
+            </div>
+          </li>
+          <li class="step-item">
+            <div class="step-num sn1">📈</div>
+            <div class="step-text">
+              A largo plazo el ahorro escala <strong>exponencialmente</strong>, similar al crecimiento compuesto
+              en finanzas, pero sin necesidad de calcularlo explícitamente.
+            </div>
+          </li>
+          <li class="step-item">
+            <div class="step-num sn1">🧠</div>
+            <div class="step-text">
+              Psicológicamente es más fácil de cumplir: el compromiso crece junto con el hábito,
+              reduciendo el abandono del plan.
+            </div>
+          </li>
+        </ul>
+
+        <!-- casos de prueba sugeridos -->
+        <div class="section-label">Casos de prueba</div>
+        <div style="display:flex; flex-wrap:wrap; gap:8px;">
+          <button onclick="document.getElementById('meses').value=6;  calcularAhorro()" style="background:rgba(124,58,237,0.15);border:1px solid rgba(124,58,237,0.35);color:#a78bfa;padding:6px 14px;border-radius:8px;cursor:pointer;font-size:0.75rem;font-family:var(--font-code);">6 meses</button>
+          <button onclick="document.getElementById('meses').value=12; calcularAhorro()" style="background:rgba(124,58,237,0.15);border:1px solid rgba(124,58,237,0.35);color:#a78bfa;padding:6px 14px;border-radius:8px;cursor:pointer;font-size:0.75rem;font-family:var(--font-code);">12 meses</button>
+          <button onclick="document.getElementById('meses').value=20; calcularAhorro()" style="background:rgba(124,58,237,0.15);border:1px solid rgba(124,58,237,0.35);color:#a78bfa;padding:6px 14px;border-radius:8px;cursor:pointer;font-size:0.75rem;font-family:var(--font-code);">20 meses</button>
+          <button onclick="document.getElementById('meses').value=30; calcularAhorro()" style="background:rgba(124,58,237,0.15);border:1px solid rgba(124,58,237,0.35);color:#a78bfa;padding:6px 14px;border-radius:8px;cursor:pointer;font-size:0.75rem;font-family:var(--font-code);">30 meses</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="conclusion-strip">
+      <div class="conc-icon">🎯</div>
+      <div class="conc-text">
+        <strong>Conclusión:</strong> La serie de Fibonacci modela el ahorro progresivo de forma matemáticamente elegante.
+        El algoritmo sin vectores demuestra que la eficiencia no requiere estructuras complejas: con solo tres variables
+        (<code>a</code>, <code>b</code>, <code>c</code>) y un bucle, se genera una secuencia infinita.
+        Este patrón aparece en la naturaleza, el diseño y las finanzas porque optimiza el crecimiento de recursos limitados.
+      </div>
+    </div>
+  </article>
+
+
+  <!-- =========================================
+       EJERCICIO 2 — VERIFICADOR DE PRIMOS
+  ========================================== -->
+  <article class="exercise-card reveal" id="ej2">
+    <div class="card-header">
+      <div class="card-icon icon2">🔐</div>
+      <div class="card-header-text">
+        <div class="ex-num c2-text">// EJERCICIO 02 — NÚMEROS PRIMOS</div>
+        <h2>Verificador de Seguridad — ¿Es primo tu código?</h2>
+        <p>
+          Los números primos son la base de la criptografía moderna (RSA, HTTPS, firmas digitales).
+          Un número es primo si solo es divisible entre 1 y sí mismo, lo que lo hace impredecible
+          y difícil de factorizar, perfecto para generar claves de acceso seguras.
+        </p>
+      </div>
+    </div>
+
+    <div class="card-body">
+      <!-- PANEL IZQUIERDO: explicación -->
+      <div class="card-panel">
+        <div class="section-label">Diagrama del algoritmo</div>
+
+        <div class="algo-diagram">
+          <div class="flowchart ex2">
+            <div class="fc-node fc-start" style="background:rgba(6,182,212,0.15);border-color:rgba(6,182,212,0.4);color:#67e8f9;">🚀 INICIO<br/><small>Leer número N</small></div>
+            <div class="fc-arrow"></div>
+            <div class="fc-node fc-decision">¿N &lt;= 1?</div>
+            <div class="fc-arrow"></div>
+            <div class="fc-branch">
+              <div class="fc-branch-yes">
+                <span class="fc-branch-label yes-label">SÍ ✓</span>
+                <div class="fc-node fc-output" style="font-size:0.65rem">NO es primo<br/>(caso especial)</div>
+              </div>
+              <div class="fc-branch-no">
+                <span class="fc-branch-label no-label">NO ✗</span>
+                <div class="fc-node fc-process" style="font-size:0.65rem">contador = 0<br/>i = 1</div>
+              </div>
+            </div>
+            <div class="fc-arrow"></div>
+            <div class="fc-node fc-decision">¿i &lt;= N?</div>
+            <div class="fc-arrow"></div>
+            <div class="fc-branch">
+              <div class="fc-branch-yes">
+                <span class="fc-branch-label yes-label">SÍ ✓</span>
+                <div class="fc-node fc-process" style="font-size:0.65rem">¿N % i == 0?<br/>→ contador++<br/>i++</div>
+              </div>
+              <div class="fc-branch-no">
+                <span class="fc-branch-label no-label">NO ✗</span>
+                <div class="fc-node fc-decision" style="font-size:0.65rem">¿contador == 2?</div>
+              </div>
+            </div>
+            <div class="fc-arrow"></div>
+            <div class="fc-node fc-output">✅ PRIMO &nbsp;|&nbsp; ❌ NO PRIMO</div>
+            <div class="fc-arrow"></div>
+            <div class="fc-node fc-end" style="background:rgba(6,182,212,0.15);border-color:rgba(6,182,212,0.4);color:#67e8f9;">🏁 FIN</div>
+          </div>
+        </div>
+
+        <div class="section-label">Explicación paso a paso</div>
+        <ul class="step-list">
+          <li class="step-item">
+            <div class="step-num sn2">01</div>
+            <div class="step-text">
+              <strong>Lectura:</strong> se obtiene el número N desde el formulario con
+              <code>document.getElementById("numero").value</code> y se convierte a entero con <code>parseInt()</code>.
+            </div>
+          </li>
+          <li class="step-item">
+            <div class="step-num sn2">02</div>
+            <div class="step-text">
+              <strong>Caso base:</strong> si N ≤ 1, se rechaza inmediatamente. Los números 0 y 1 no son primos
+              por definición matemática.
+            </div>
+          </li>
+          <li class="step-item">
+            <div class="step-num sn2">03</div>
+            <div class="step-text">
+              <strong>Conteo de divisores:</strong> un bucle prueba cada número <code>i</code> desde 1 hasta N.
+              Si <code>N % i === 0</code> (el residuo es cero), <code>i</code> es divisor: se incrementa <code>contador</code>.
+            </div>
+          </li>
+          <li class="step-item">
+            <div class="step-num sn2">04</div>
+            <div class="step-text">
+              <strong>Veredicto:</strong> si <code>contador === 2</code>, el número tiene exactamente
+              dos divisores (1 y él mismo) → es primo. Cualquier otro valor → no es primo.
+            </div>
+          </li>
+          <li class="step-item">
+            <div class="step-num sn2">05</div>
+            <div class="step-text">
+              <strong>Versión optimizada:</strong> el algoritmo también muestra los divisores encontrados
+              para visualizar por qué un número no es primo, mejorando la comprensión didáctica.
+            </div>
+          </li>
+        </ul>
+
+        <div class="section-label">Código JavaScript</div>
+        <div class="code-block">
+          <span class="code-tag">script.js</span>
+<span class="cm">// ── Ejercicio 2: Verificador de número primo ──</span>
+<span class="kw">function</span> <span class="fn">verificarPrimo</span>() {
+  <span class="kw">const</span> numero = parseInt(
+    document.<span class="fn">getElementById</span>(<span class="str">"numero"</span>).value
+  );
+
+  <span class="cm">// Validar entrada</span>
+  <span class="kw">if</span> (isNaN(numero) || numero &lt; <span class="num">1</span> || numero &gt; <span class="num">999999</span>) {
+    <span class="fn">mostrarError</span>(<span class="str">"ej2Error"</span>, <span class="str">"Ingresa un número entre 1 y 999999"</span>);
+    <span class="kw">return</span>;
+  }
+
+  <span class="cm">// Casos especiales</span>
+  <span class="kw">if</span> (numero &lt;= <span class="num">1</span>) {
+    <span class="fn">mostrarResultadoPrimo</span>(<span class="kw">false</span>, numero, [], <span class="str">"Caso especial: ≤ 1"</span>);
+    <span class="kw">return</span>;
+  }
+
+  <span class="kw">let</span> contador = <span class="num">0</span>;
+  <span class="kw">let</span> divisores = [];  <span class="cm">// para mostrar al usuario</span>
+
+  <span class="cm">// Buscar todos los divisores (algoritmo del PDF)</span>
+  <span class="kw">for</span> (<span class="kw">let</span> i = <span class="num">1</span>; i &lt;= numero; i++) {
+    <span class="kw">if</span> (numero % i === <span class="num">0</span>) {
+      contador++;
+      divisores.push(i);
+    }
+  }
+
+  <span class="cm">// Un primo tiene EXACTAMENTE 2 divisores: 1 y él mismo</span>
+  <span class="kw">const</span> esPrimo = (contador === <span class="num">2</span>);
+
+  <span class="cm">// Mostrar resultado en la página</span>
+  <span class="fn">mostrarResultadoPrimo</span>(esPrimo, numero, divisores,
+    esPrimo
+      ? <span class="str">`Solo divisible entre 1 y ${numero}`</span>
+      : <span class="str">`Tiene ${contador} divisores`</span>
+  );
+}
+        </div>
+      </div>
+
+      <!-- PANEL DERECHO: formulario + resultado -->
+      <div class="card-panel ex2-form">
+        <div class="section-label">Probar el verificador</div>
+
+        <div class="form-group">
+          <label for="numero">Ingresa un número para verificar (1 – 999999)</label>
+          <input
+            type="number" id="numero"
+            min="1" max="999999" value="97"
+            placeholder="Ej: 97"
+          />
+        </div>
+
+        <div id="ej2Error" class="error-msg">⚠ Ingresa un número entre 1 y 999999.</div>
+
+        <button class="btn btn2" onclick="verificarPrimo()">
+          🔐 Verificar si es primo
+        </button>
+
+        <div id="resultPrimo" class="result-box">
+          <span class="result-placeholder">← Ingresa un número y presiona el botón para saber si puede usarse como clave segura.</span>
+        </div>
+
+        <div class="section-label" style="margin-top:20px">¿Por qué los primos protegen datos?</div>
+        <ul class="step-list">
+          <li class="step-item">
+            <div class="step-num sn2">🔑</div>
+            <div class="step-text">
+              El algoritmo <strong>RSA</strong> (que protege el 80% del tráfico web) funciona multiplicando
+              dos números primos enormes. El resultado es fácil de calcular pero extremadamente difícil de factorizar.
+            </div>
+          </li>
+          <li class="step-item">
+            <div class="step-num sn2">🛡️</div>
+            <div class="step-text">
+              Una clave de <strong>2048 bits</strong> usa primos tan grandes que factorizarlos llevaría
+              millones de años con las computadoras actuales.
+            </div>
+          </li>
+          <li class="step-item">
+            <div class="step-num sn2">⚡</div>
+            <div class="step-text">
+              Cada vez que tu navegador muestra 🔒 (HTTPS), está usando <strong>números primos</strong>
+              para cifrar tu información en tiempo real.
+            </div>
+          </li>
+        </ul>
+
+        <!-- casos de prueba -->
+        <div class="section-label">Casos de prueba</div>
+        <div style="display:flex; flex-wrap:wrap; gap:8px;">
+          <button onclick="document.getElementById('numero').value=2;      verificarPrimo()" style="background:rgba(6,182,212,0.12);border:1px solid rgba(6,182,212,0.3);color:#22d3ee;padding:6px 14px;border-radius:8px;cursor:pointer;font-size:0.75rem;font-family:var(--font-code);">2 (primo)</button>
+          <button onclick="document.getElementById('numero').value=15;     verificarPrimo()" style="background:rgba(6,182,212,0.12);border:1px solid rgba(6,182,212,0.3);color:#22d3ee;padding:6px 14px;border-radius:8px;cursor:pointer;font-size:0.75rem;font-family:var(--font-code);">15 (no)</button>
+          <button onclick="document.getElementById('numero').value=97;     verificarPrimo()" style="background:rgba(6,182,212,0.12);border:1px solid rgba(6,182,212,0.3);color:#22d3ee;padding:6px 14px;border-radius:8px;cursor:pointer;font-size:0.75rem;font-family:var(--font-code);">97 (primo)</button>
+          <button onclick="document.getElementById('numero').value=100;    verificarPrimo()" style="background:rgba(6,182,212,0.12);border:1px solid rgba(6,182,212,0.3);color:#22d3ee;padding:6px 14px;border-radius:8px;cursor:pointer;font-size:0.75rem;font-family:var(--font-code);">100 (no)</button>
+          <button onclick="document.getElementById('numero').value=7919;   verificarPrimo()" style="background:rgba(6,182,212,0.12);border:1px solid rgba(6,182,212,0.3);color:#22d3ee;padding:6px 14px;border-radius:8px;cursor:pointer;font-size:0.75rem;font-family:var(--font-code);">7919 (primo)</button>
+          <button onclick="document.getElementById('numero').value=999983; verificarPrimo()" style="background:rgba(6,182,212,0.12);border:1px solid rgba(6,182,212,0.3);color:#22d3ee;padding:6px 14px;border-radius:8px;cursor:pointer;font-size:0.75rem;font-family:var(--font-code);">999983</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="conclusion-strip">
+      <div class="conc-icon">🎯</div>
+      <div class="conc-text">
+        <strong>Conclusión:</strong> Contar divisores es la forma más directa de verificar si un número es primo.
+        Aunque para números muy grandes existen algoritmos más eficientes (Miller-Rabin, AKS), el método del PDF
+        (<code>contador === 2</code>) es perfecto para comprender el concepto: un primo solo se divide entre 1 y sí mismo.
+        Esta propiedad única hace que los primos sean el pilar de la seguridad informática global.
+      </div>
+    </div>
+  </article>
+
+
+  <!-- =========================================
+       EJERCICIO 3 — FIBONACCI + PRIMOS COMBINADOS
+  ========================================== -->
+  <article class="exercise-card reveal" id="ej3">
+    <div class="card-header">
+      <div class="card-icon icon3">🌿</div>
+      <div class="card-header-text">
+        <div class="ex-num c3-text">// EJERCICIO 03 — FIBONACCI &amp; PRIMOS COMBINADOS</div>
+        <h2>Primos de Fibonacci — Patrones en la Naturaleza</h2>
+        <p>
+          Los números de Fibonacci que también son primos se llaman <em>Fibonacci primos</em>.
+          Aparecen en la disposición de pétalos, espirales de caracoles, ramas de árboles y semillas de girasol.
+          Este ejercicio genera la secuencia Fibonacci, la evalúa término a término y resalta los que son primos.
+        </p>
+      </div>
+    </div>
+
+    <div class="card-body">
+      <!-- PANEL IZQUIERDO -->
+      <div class="card-panel">
+        <div class="section-label">Diagrama del algoritmo combinado</div>
+
+        <div class="algo-diagram">
+          <div class="flowchart ex3">
+            <div class="fc-node fc-start" style="background:rgba(245,158,11,0.15);border-color:rgba(245,158,11,0.4);color:#fcd34d;">🚀 INICIO<br/><small>Leer cantidad N de términos</small></div>
+            <div class="fc-arrow"></div>
+            <div class="fc-node fc-process">a=1, b=1, i=1<br/>fibPrimos=0</div>
+            <div class="fc-arrow"></div>
+            <div class="fc-node fc-decision">¿i &lt;= N?</div>
+            <div class="fc-arrow"></div>
+            <div class="fc-branch">
+              <div class="fc-branch-yes">
+                <span class="fc-branch-label yes-label">SÍ ✓</span>
+                <div class="fc-node fc-process" style="font-size:0.63rem">
+                  actual = a<br/>
+                  ¿esPrimo(actual)?<br/>
+                  → contadorDiv<br/>
+                  → mostrar chip<br/>
+                  c=a+b; a=b; b=c<br/>
+                  i++
+                </div>
+              </div>
+              <div class="fc-branch-no">
+                <span class="fc-branch-label no-label">NO ✗</span>
+                <div class="fc-node fc-output" style="font-size:0.63rem">
+                  Mostrar chips<br/>
+                  + resumen<br/>
+                  + tabla completa
+                </div>
+              </div>
+            </div>
+            <div class="fc-arrow"></div>
+            <div class="fc-node fc-end" style="background:rgba(245,158,11,0.15);border-color:rgba(245,158,11,0.4);color:#fcd34d;">🏁 FIN</div>
+          </div>
+        </div>
+
+        <div class="section-label">Explicación paso a paso</div>
+        <ul class="step-list">
+          <li class="step-item">
+            <div class="step-num sn3">01</div>
+            <div class="step-text">
+              <strong>Generación Fibonacci:</strong> el bucle externo genera cada término con las variables
+              <code>a</code> y <code>b</code> usando el mismo patrón del Ejercicio 1 (sin arrays).
+            </div>
+          </li>
+          <li class="step-item">
+            <div class="step-num sn3">02</div>
+            <div class="step-text">
+              <strong>Sub-función <code>esPrimo(n)</code>:</strong> para cada término Fibonacci se invoca
+              la verificación de primalidad del Ejercicio 2. La reutilización de código demuestra modularidad.
+            </div>
+          </li>
+          <li class="step-item">
+            <div class="step-num sn3">03</div>
+            <div class="step-text">
+              <strong>Clasificación visual:</strong> los términos se muestran como <em>chips</em> de colores:
+              verde con estrella ★ si son primo-Fibonacci, azul si solo son Fibonacci regulares.
+            </div>
+          </li>
+          <li class="step-item">
+            <div class="step-num sn3">04</div>
+            <div class="step-text">
+              <strong>Tabla detallada:</strong> además de los chips, se genera una tabla completa con el índice,
+              el valor Fibonacci, si es primo y sus divisores. Todo usando <code>getElementById</code>.
+            </div>
+          </li>
+          <li class="step-item">
+            <div class="step-num sn3">05</div>
+            <div class="step-text">
+              <strong>Resumen estadístico:</strong> al final se muestra cuántos Fibonacci-primos se encontraron
+              y qué porcentaje representan del total de términos analizados.
+            </div>
+          </li>
+        </ul>
+
+        <div class="section-label">Código JavaScript</div>
+        <div class="code-block">
+          <span class="code-tag">script.js</span>
+<span class="cm">// ── Ejercicio 3: Fibonacci + Primos combinados ──</span>
+
+<span class="cm">// Sub-función: verificar si n es primo</span>
+<span class="kw">function</span> <span class="fn">esPrimo</span>(n) {
+  <span class="kw">if</span> (n &lt;= <span class="num">1</span>) <span class="kw">return false</span>;
+  <span class="kw">let</span> contador = <span class="num">0</span>;
+  <span class="kw">for</span> (<span class="kw">let</span> i = <span class="num">1</span>; i &lt;= n; i++) {
+    <span class="kw">if</span> (n % i === <span class="num">0</span>) contador++;
+  }
+  <span class="kw">return</span> contador === <span class="num">2</span>;
+}
+
+<span class="kw">function</span> <span class="fn">calcularFibPrimos</span>() {
+  <span class="kw">const</span> terminos = parseInt(
+    document.<span class="fn">getElementById</span>(<span class="str">"terminos"</span>).value
+  );
+
+  <span class="kw">if</span> (isNaN(terminos) || terminos &lt; <span class="num">1</span> || terminos &gt; <span class="num">25</span>) {
+    <span class="fn">mostrarError</span>(<span class="str">"ej3Error"</span>, <span class="str">"Ingresa entre 1 y 25 términos"</span>);
+    <span class="kw">return</span>;
+  }
+
+  <span class="cm">// Variables Fibonacci (sin arrays)</span>
+  <span class="kw">let</span> a = <span class="num">1</span>, b = <span class="num">1</span>, c;
+  <span class="kw">let</span> chips = <span class="str">""</span>;
+  <span class="kw">let</span> filas = <span class="str">""</span>;
+  <span class="kw">let</span> contPrimos = <span class="num">0</span>;
+
+  <span class="kw">for</span> (<span class="kw">let</span> i = <span class="num">1</span>; i &lt;= terminos; i++) {
+    <span class="kw">const</span> primo = <span class="fn">esPrimo</span>(a);  <span class="cm">// verificar primalidad</span>
+    <span class="kw">if</span> (primo) contPrimos++;
+
+    <span class="cm">// Chip visual</span>
+    chips += <span class="str">`&lt;span class="fib-chip ${primo?'is-prime':''}"&gt;
+      F(${i})=${a}
+    &lt;/span&gt;`</span>;
+
+    <span class="cm">// Fila de tabla</span>
+    filas += <span class="str">`&lt;tr&gt;
+      &lt;td&gt;F(${i})&lt;/td&gt;
+      &lt;td&gt;${a}&lt;/td&gt;
+      &lt;td&gt;${primo?'✅ SÍ':'❌ No'}&lt;/td&gt;
+    &lt;/tr&gt;`</span>;
+
+    c = a + b; a = b; b = c;  <span class="cm">// avanzar serie</span>
+  }
+
+  <span class="cm">// Inyectar todo en el DOM mediante getElementById</span>
+  document.<span class="fn">getElementById</span>(<span class="str">"chipsFib"</span>).innerHTML = chips;
+  document.<span class="fn">getElementById</span>(<span class="str">"tablaFib"</span>).innerHTML = filas;
+  document.<span class="fn">getElementById</span>(<span class="str">"contPrimos"</span>).textContent = contPrimos;
+  document.<span class="fn">getElementById</span>(<span class="str">"resultFib"</span>).classList.add(<span class="str">"active3"</span>);
+}
+        </div>
+      </div>
+
+      <!-- PANEL DERECHO -->
+      <div class="card-panel ex3-form">
+        <div class="section-label">Probar el ejercicio</div>
+
+        <div class="form-group">
+          <label for="terminos">¿Cuántos términos Fibonacci analizar? (1 – 25)</label>
+          <input
+            type="number" id="terminos"
+            min="1" max="25" value="15"
+            placeholder="Ej: 15"
+          />
+        </div>
+
+        <div id="ej3Error" class="error-msg">⚠ Ingresa un número entre 1 y 25.</div>
+
+        <button class="btn btn3" onclick="calcularFibPrimos()">
+          🌿 Analizar Fibonacci + Primos
+        </button>
+
+        <div id="resultFib" class="result-box">
+          <span class="result-placeholder">← Ingresa la cantidad de términos y presiona el botón. Los chips verdes ★ indican Fibonacci-primos.</span>
+        </div>
+
+        <div class="section-label" style="margin-top:20px">Fibonacci primos en la naturaleza</div>
+        <ul class="step-list">
+          <li class="step-item">
+            <div class="step-num sn3">🌻</div>
+            <div class="step-text">
+              Los girasoles tienen <strong>F(12)=144</strong> espirales, pero los pétalos de muchas flores
+              corresponden a términos Fibonacci-primo: 2, 3, 5, 13…
+            </div>
+          </li>
+          <li class="step-item">
+            <div class="step-num sn3">🐚</div>
+            <div class="step-text">
+              La espiral de Fibonacci sigue la razón áurea φ ≈ 1.618, y curiosamente los índices
+              de los Fibonacci-primos tienden a ser ellos mismos primos.
+            </div>
+          </li>
+          <li class="step-item">
+            <div class="step-num sn3">🌿</div>
+            <div class="step-text">
+              Se conjetura que hay <strong>infinitos Fibonacci-primos</strong>, pero solo se conocen
+              unos pocos, lo que los convierte en uno de los problemas abiertos de las matemáticas.
+            </div>
+          </li>
+        </ul>
+
+        <!-- casos de prueba -->
+        <div class="section-label">Casos de prueba</div>
+        <div style="display:flex; flex-wrap:wrap; gap:8px;">
+          <button onclick="document.getElementById('terminos').value=5;  calcularFibPrimos()" style="background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.3);color:#fcd34d;padding:6px 14px;border-radius:8px;cursor:pointer;font-size:0.75rem;font-family:var(--font-code);">5 términos</button>
+          <button onclick="document.getElementById('terminos').value=10; calcularFibPrimos()" style="background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.3);color:#fcd34d;padding:6px 14px;border-radius:8px;cursor:pointer;font-size:0.75rem;font-family:var(--font-code);">10 términos</button>
+          <button onclick="document.getElementById('terminos').value=15; calcularFibPrimos()" style="background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.3);color:#fcd34d;padding:6px 14px;border-radius:8px;cursor:pointer;font-size:0.75rem;font-family:var(--font-code);">15 términos</button>
+          <button onclick="document.getElementById('terminos').value=20; calcularFibPrimos()" style="background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.3);color:#fcd34d;padding:6px 14px;border-radius:8px;cursor:pointer;font-size:0.75rem;font-family:var(--font-code);">20 términos</button>
+          <button onclick="document.getElementById('terminos').value=25; calcularFibPrimos()" style="background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.3);color:#fcd34d;padding:6px 14px;border-radius:8px;cursor:pointer;font-size:0.75rem;font-family:var(--font-code);">25 términos</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="conclusion-strip">
+      <div class="conc-icon">🎯</div>
+      <div class="conc-text">
+        <strong>Conclusión:</strong> Combinar Fibonacci y primos revela que estas dos secuencias
+        matemáticamente independientes se intersectan de forma sorprendente. El algoritmo demuestra
+        la potencia de la <em>reutilización de funciones</em>: <code>esPrimo()</code> trabaja dentro del bucle Fibonacci,
+        convirtiendo dos problemas separados en uno integrado. Estos patrones no son accidentes:
+        la naturaleza y las matemáticas comparten una gramática común basada en la eficiencia y la primalidad.
+      </div>
+    </div>
+  </article>
+
+</main>
+
+<!-- FOOTER -->
+<footer>
+  <p>Desafío Web 2025 — Matemáticas que Resuelven Problemas &nbsp;|&nbsp; HTML + CSS + JavaScript</p>
+  <p style="margin-top:6px;font-size:0.68rem;">Fibonacci · Números Primos · Fibonacci-Primos · document.getElementById() · Diseño Responsivo</p>
+</footer>
+
+
+<!-- =========================================
+     JAVASCRIPT — TODA LA LÓGICA
+========================================== -->
+<script>
+
+  /* ==========================================
+     UTILIDADES GLOBALES
+  ========================================== */
+
+  /** Muestra un mensaje de error en el elemento con el id dado */
+  function mostrarError(id, mensaje) {
+    const el = document.getElementById(id);
+    el.textContent = "⚠ " + mensaje;
+    el.classList.add("show");
+    setTimeout(() => el.classList.remove("show"), 3500);
+  }
+
+  /** Oculta el error de un ejercicio */
+  function ocultarError(id) {
+    document.getElementById(id).classList.remove("show");
+  }
+
+
+  /* ==========================================
+     EJERCICIO 1 — AHORRO PROGRESIVO CON FIBONACCI
+     -----------------------------------------
+     Genera la secuencia de Fibonacci y construye
+     una tabla de ahorro mes a mes sin usar arrays.
+     Usa solo las variables a, b, c (ventana deslizante).
+  ========================================== */
+  function calcularAhorro() {
+    ocultarError("ej1Error");
+
+    // Leer datos del formulario con getElementById (obligatorio según PDF)
+    const meses = parseInt(document.getElementById("meses").value);
+
+    // Validación de entrada
+    if (isNaN(meses) || meses < 1 || meses > 40) {
+      mostrarError("ej1Error", "Ingresa un número entero entre 1 y 40.");
+      return;
+    }
+
+    // ── Algoritmo de Fibonacci sin arrays ──────────────────────
+    // a = término actual (ahorro del mes i)
+    // b = término siguiente
+    // c = variable auxiliar para el intercambio
+    let a = 1;    // F(1) = 1
+    let b = 1;    // F(2) = 1
+    let c;        // auxiliar
+    let suma = 0; // acumulador del total ahorrado
+
+    // Construir HTML de la tabla
+    let filas = "";
+
+    for (let i = 1; i <= meses; i++) {
+      suma += a; // sumar el ahorro de este mes al total
+
+      // Formato con separadores de miles para legibilidad
+      const aFmt    = a.toLocaleString();
+      const sumaFmt = suma.toLocaleString();
+
+      // Estilo de la fila (alternar, resaltar primera y última)
+      const esUltimo = (i === meses);
+      const estiloFila = esUltimo
+        ? 'style="background:rgba(124,58,237,0.08)"'
+        : '';
+
+      filas += `
+        <tr ${estiloFila}>
+          <td style="color:var(--muted)">Mes ${i}</td>
+          <td style="color:#c4b5fd;font-weight:600">Bs. ${aFmt}</td>
+          <td style="color:var(--text)">Bs. ${sumaFmt}</td>
+        </tr>`;
+
+      // Avanzar la serie Fibonacci:
+      // El nuevo término c = a + b (suma de los dos anteriores)
+      // Luego desplazamos: a ← b, b ← c
+      c = a + b;
+      a = b;
+      b = c;
+    }
+
+    // Construir la tabla completa
+    const tablaHTML = `
+      <table class="res-table" id="tablaAhorro">
+        <thead>
+          <tr>
+            <th>Mes</th>
+            <th>Ahorro del mes</th>
+            <th>Total acumulado</th>
+          </tr>
+        </thead>
+        <tbody>${filas}</tbody>
+      </table>
+      <div class="total-box total1" style="margin-top:14px">
+        <span class="total-label">💰 Total ahorrado en ${meses} mes${meses>1?'es':''}</span>
+        <span class="total-val tv1" id="totalAhorro">Bs. ${suma.toLocaleString()}</span>
+      </div>
+    `;
+
+    // Inyectar resultado en la página usando getElementById
+    const caja = document.getElementById("resultAhorro");
+    caja.innerHTML = tablaHTML;
+    caja.classList.add("active1");
+
+    // Animación suave de aparición
+    caja.style.opacity = "0";
+    caja.style.transform = "translateY(8px)";
+    setTimeout(() => {
+      caja.style.transition = "opacity 0.4s, transform 0.4s";
+      caja.style.opacity = "1";
+      caja.style.transform = "none";
+    }, 50);
+  }
+
+
+  /* ==========================================
+     EJERCICIO 2 — VERIFICADOR DE NÚMERO PRIMO
+     -----------------------------------------
+     Cuenta los divisores de N.
+     Si el conteo es exactamente 2 → primo.
+     Muestra divisores encontrados y veredicto.
+  ========================================== */
+  function verificarPrimo() {
+    ocultarError("ej2Error");
+
+    // Leer el número desde el formulario con getElementById
+    const numero = parseInt(document.getElementById("numero").value);
+
+    // Validación
+    if (isNaN(numero) || numero < 1 || numero > 999999) {
+      mostrarError("ej2Error", "Ingresa un número entero entre 1 y 999,999.");
+      return;
+    }
+
+    // Caso especial: N = 1 (no es primo por definición)
+    if (numero === 1) {
+      mostrarResultadoPrimo(false, 1, [1],
+        "El número 1 no es primo: solo tiene 1 divisor, no 2.");
+      return;
+    }
+
+    // ── Algoritmo del PDF: contar divisores ──────────────────────
+    // Un número primo solo tiene exactamente 2 divisores: 1 y él mismo.
+    // Si encontramos más (o menos) → no es primo.
+    let contador = 0;
+    let divisores = [];
+
+    for (let i = 1; i <= numero; i++) {
+      if (numero % i === 0) {   // i divide exactamente a número (sin residuo)
+        contador++;
+        divisores.push(i);
+      }
+    }
+
+    // Veredicto: exactamente 2 divisores = primo
+    const esPrimo = (contador === 2);
+
+    // Mensaje explicativo personalizado
+    let detalle;
+    if (esPrimo) {
+      detalle = `Solo es divisible entre 1 y ${numero.toLocaleString()}. ¡Válido como clave de seguridad!`;
+    } else if (numero === 1) {
+      detalle = "El 1 no es primo (solo tiene 1 divisor).";
+    } else {
+      detalle = `Tiene ${contador} divisores: ${divisores.join(", ")}. No sirve como clave segura.`;
+    }
+
+    mostrarResultadoPrimo(esPrimo, numero, divisores, detalle);
+  }
+
+  /**
+   * Renderiza el resultado visual del verificador de primos.
+   * @param {boolean} esPrimo  - si el número es primo
+   * @param {number}  numero   - el número analizado
+   * @param {number[]} divisores - lista de divisores encontrados
+   * @param {string}  detalle  - mensaje explicativo
+   */
+  function mostrarResultadoPrimo(esPrimo, numero, divisores, detalle) {
+    const icono = esPrimo ? "✅" : "❌";
+    const clase  = esPrimo ? "prime-yes" : "prime-no";
+    const label  = esPrimo ? "✅ ES PRIMO" : "❌ NO ES PRIMO";
+    const color  = esPrimo ? "#6ee7b7" : "#fca5a5";
+
+    // Construir lista de divisores con etiquetas
+    let divHTML = "";
+    if (divisores.length > 0) {
+      divHTML = `
+        <div style="margin-top:12px;text-align:left;width:100%">
+          <div style="font-size:0.7rem;color:var(--muted);margin-bottom:6px;font-family:var(--font-code);">
+            DIVISORES ENCONTRADOS (${divisores.length}):
+          </div>
+          <div style="display:flex;flex-wrap:wrap;gap:5px">
+            ${divisores.map(d => {
+              const esEspecial = (d === 1 || d === numero);
+              return `<span style="
+                padding:3px 9px;border-radius:5px;font-size:0.7rem;
+                font-family:var(--font-code);
+                background:${esEspecial ? 'rgba(124,58,237,0.2)' : 'rgba(6,182,212,0.1)'};
+                border:1px solid ${esEspecial ? 'rgba(124,58,237,0.4)' : 'rgba(6,182,212,0.25)'};
+                color:${esEspecial ? '#c4b5fd' : '#67e8f9'}
+              ">${d}</span>`;
+            }).join("")}
+          </div>
+        </div>`;
+    }
+
+    const html = `
+      <div class="prime-result">
+        <div class="prime-circle ${clase}" style="font-size:1.1rem;width:90px;height:90px;
+             box-shadow:0 0 30px ${esPrimo ? 'rgba(16,185,129,0.3)' : 'rgba(239,68,68,0.2)'}">
+          <div style="text-align:center;line-height:1.3">
+            <div style="font-size:1.6rem">${esPrimo ? '🔐' : '🔓'}</div>
+            <div style="font-size:0.65rem;margin-top:2px">${numero.toLocaleString()}</div>
+          </div>
+        </div>
+        <div class="prime-label" style="color:${color}">${label}</div>
+        <div class="prime-detail">${detalle}</div>
+        ${divHTML}
+        <div style="
+          width:100%;padding:10px 14px;border-radius:8px;margin-top:4px;
+          background:${esPrimo ? 'rgba(16,185,129,0.08)' : 'rgba(239,68,68,0.06)'};
+          border:1px solid ${esPrimo ? 'rgba(16,185,129,0.25)' : 'rgba(239,68,68,0.2)'};
+          font-size:0.75rem;color:var(--muted);text-align:center;
+          font-family:var(--font-code)
+        ">
+          ${esPrimo
+            ? `🛡️ Nivel de seguridad: VÁLIDO — ${numero.toLocaleString()} puede usarse como componente de clave`
+            : `⚠️ Nivel de seguridad: DÉBIL — ${numero.toLocaleString()} tiene factores que lo hacen predecible`
+          }
+        </div>
+      </div>`;
+
+    // Inyectar en la página con getElementById
+    const caja = document.getElementById("resultPrimo");
+    caja.innerHTML = html;
+    caja.classList.add("active2");
+
+    caja.style.opacity = "0";
+    setTimeout(() => {
+      caja.style.transition = "opacity 0.4s";
+      caja.style.opacity = "1";
+    }, 50);
+  }
+
+
+  /* ==========================================
+     EJERCICIO 3 — FIBONACCI + PRIMOS COMBINADOS
+     -----------------------------------------
+     Genera N términos de Fibonacci y verifica
+     cuáles son primos. Muestra chips visuales
+     (verde★ = primo, azul = solo Fibonacci)
+     y una tabla detallada completa.
+  ========================================== */
+
+  /**
+   * Sub-función: determina si n es primo.
+   * Reutiliza el mismo algoritmo del Ejercicio 2.
+   * @param {number} n - el número a verificar
+   * @returns {boolean}
+   */
+  function esPrimo(n) {
+    if (n <= 1) return false; // 0 y 1 no son primos
+
+    let contador = 0;
+    for (let i = 1; i <= n; i++) {
+      if (n % i === 0) contador++; // contar divisores
+    }
+    return contador === 2; // primo si tiene exactamente 2 divisores
+  }
+
+  function calcularFibPrimos() {
+    ocultarError("ej3Error");
+
+    // Leer cantidad de términos con getElementById
+    const terminos = parseInt(document.getElementById("terminos").value);
+
+    // Validación
+    if (isNaN(terminos) || terminos < 1 || terminos > 25) {
+      mostrarError("ej3Error", "Ingresa un número entre 1 y 25 términos.");
+      return;
+    }
+
+    // ── Variables Fibonacci (sin arrays) ─────────────────────────
+    let a = 1;   // término actual
+    let b = 1;   // término siguiente
+    let c;       // auxiliar
+
+    // Contadores
+    let contPrimos    = 0; // cuántos son Fibonacci-primos
+    let contNoPrimos  = 0; // cuántos son solo Fibonacci
+
+    // HTML acumuladores
+    let chipsHTML = "";
+    let filasHTML  = "";
+
+    for (let i = 1; i <= terminos; i++) {
+      const valorActual = a;            // guardar valor antes de avanzar
+      const primo = esPrimo(valorActual); // verificar primalidad
+
+      if (primo) {
+        contPrimos++;
+      } else {
+        contNoPrimos++;
+      }
+
+      // ── Chip visual ───────────────────────────────────────
+      // Verde con estrella si es primo, azul si no
+      chipsHTML += `
+        <span class="fib-chip ${primo ? 'is-prime' : ''}"
+              title="${primo ? '⭐ Fibonacci-primo!' : 'Solo Fibonacci'}">
+          F(${i}) = ${valorActual.toLocaleString()}
+        </span>`;
+
+      // ── Fila de tabla detallada ────────────────────────────
+      filasHTML += `
+        <tr>
+          <td style="color:var(--muted);font-family:var(--font-code)">F(${i})</td>
+          <td style="color:${primo ? '#fcd34d' : 'var(--text)'};font-weight:${primo ? 700 : 400}">
+            ${valorActual.toLocaleString()}
+          </td>
+          <td>
+            ${primo
+              ? '<span style="color:#6ee7b7;font-weight:700">⭐ SÍ</span>'
+              : '<span style="color:var(--muted)">— No</span>'
+            }
+          </td>
+        </tr>`;
+
+      // Avanzar la serie Fibonacci
+      c = a + b;
+      a = b;
+      b = c;
+    }
+
+    // Porcentaje de Fibonacci-primos
+    const porcentaje = ((contPrimos / terminos) * 100).toFixed(1);
+
+    // ── Construir resultado completo ─────────────────────────
+    const html = `
+      <!-- Leyenda de colores -->
+      <div style="display:flex;gap:12px;margin-bottom:12px;flex-wrap:wrap">
+        <div style="display:flex;align-items:center;gap:6px;font-size:0.72rem;color:var(--muted)">
+          <span style="width:12px;height:12px;background:rgba(16,185,129,0.3);
+                border:1.5px solid rgba(16,185,129,0.6);border-radius:3px"></span>
+          Fibonacci-primo ⭐
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;font-size:0.72rem;color:var(--muted)">
+          <span style="width:12px;height:12px;background:rgba(6,182,212,0.15);
+                border:1.5px solid rgba(6,182,212,0.3);border-radius:3px"></span>
+          Solo Fibonacci
+        </div>
+      </div>
+
+      <!-- Chips -->
+      <div class="fib-chips">${chipsHTML}</div>
+
+      <!-- Resumen estadístico -->
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin:16px 0">
+        <div style="background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.25);
+                    border-radius:10px;padding:12px;text-align:center">
+          <div style="font-size:1.5rem;font-weight:800;color:#fcd34d">${terminos}</div>
+          <div style="font-size:0.68rem;color:var(--muted);margin-top:2px">Términos totales</div>
+        </div>
+        <div style="background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.25);
+                    border-radius:10px;padding:12px;text-align:center">
+          <div style="font-size:1.5rem;font-weight:800;color:#6ee7b7" id="contPrimos">${contPrimos}</div>
+          <div style="font-size:0.68rem;color:var(--muted);margin-top:2px">Fibonacci-primos ⭐</div>
+        </div>
+        <div style="background:rgba(100,100,140,0.08);border:1px solid rgba(100,100,140,0.2);
+                    border-radius:10px;padding:12px;text-align:center">
+          <div style="font-size:1.5rem;font-weight:800;color:#a78bfa">${porcentaje}%</div>
+          <div style="font-size:0.68rem;color:var(--muted);margin-top:2px">Son primos</div>
+        </div>
+      </div>
+
+      <!-- Tabla detallada -->
+      <div style="font-size:0.68rem;color:var(--muted);margin-bottom:8px;
+                  font-family:var(--font-code);letter-spacing:0.08em">
+        TABLA DETALLADA
+      </div>
+      <table class="res-table" id="tablaFib">
+        <thead>
+          <tr>
+            <th>Índice</th>
+            <th>Valor Fibonacci</th>
+            <th>¿Es primo?</th>
+          </tr>
+        </thead>
+        <tbody>${filasHTML}</tbody>
+      </table>
+    `;
+
+    // Inyectar resultado con getElementById
+    const caja = document.getElementById("resultFib");
+    caja.innerHTML = html;
+    caja.classList.add("active3");
+
+    caja.style.opacity = "0";
+    caja.style.transform = "translateY(8px)";
+    setTimeout(() => {
+      caja.style.transition = "opacity 0.45s, transform 0.45s";
+      caja.style.opacity = "1";
+      caja.style.transform = "none";
+    }, 50);
+  }
+
+
+  /* ==========================================
+     SCROLL REVEAL — ANIMAR TARJETAS AL ENTRAR
+  ========================================== */
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add("visible");
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.08 });
+
+  document.querySelectorAll(".reveal").forEach(el => observer.observe(el));
+
+
+  /* ==========================================
+     EJECUTAR EJEMPLOS POR DEFECTO AL CARGAR
+  ========================================== */
+  window.addEventListener("DOMContentLoaded", () => {
+    // Pequeño retardo para que la animación de entrada se vea primero
+    setTimeout(() => {
+      calcularAhorro();
+      verificarPrimo();
+      calcularFibPrimos();
+    }, 600);
+  });
+
+</script>
+</body>
+</html>
